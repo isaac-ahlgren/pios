@@ -42,7 +42,7 @@ clean:
 	rm -f rootfs.img
 	rm -f kernel8.img
 	rm -f kernel8.elf
-	kill all screen
+	killall screen
 
 debug:
 	screen -S qemu -d -m qemu-system-aarch64 -machine raspi3 -kernel kernel8.img -hda rootfs.img -S -s -serial null -serial stdio -monitor none -nographic -k en-us 
