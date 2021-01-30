@@ -32,14 +32,14 @@ SECTIONS
     . = ALIGN(4096); /* align to page size */
     __data_end = .;
  
-    __bss_start = .;
+    PROVIDE(__bss_start = .);
     .bss :
     {
         bss = .;
         *(.bss)
     }
     . = ALIGN(4096); /* align to page size */
-    __bss_end = .;
-    __bss_size = __bss_end - __bss_start;
+    PROVIDE(__bss_end = .);
+    PROVIDE(__bss_size = __bss_end - __bss_start);
     __end = .;
 }

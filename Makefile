@@ -15,6 +15,7 @@ SDIR = src
 OBJS = \
 	boot.o \
 	kernel_main.o \
+	list.o \
 
 
 
@@ -41,6 +42,7 @@ clean:
 	rm -f rootfs.img
 	rm -f kernel8.img
 	rm -f kernel8.elf
+	kill all screen
 
 debug:
 	screen -S qemu -d -m qemu-system-aarch64 -machine raspi3 -kernel kernel8.img -hda rootfs.img -S -s -serial null -serial stdio -monitor none -nographic -k en-us 
@@ -55,9 +57,9 @@ disassemble:
 rootfs.img:
 	dd if=/dev/zero of=rootfs.img bs=1M count=16
 	mkfs.fat -F12 rootfs.img
-	sudo mount rootfs.img /mnt/disk
-	sudo mkdir -p /mnt/disk/boot/firmware
-	sudo mkdir /mnt/disk/bin
-	sudo mkdir /mnt/disk/etc
-	sudo umount /mnt/disk
+	sudo mount rootfs.img /mnt
+	sudo mkdir -p /mnt/boot/firmware
+	sudo mkdir /mnt/bin
+	sudo mkdir /mnt/etc
+	sudo umount /mnt
 
