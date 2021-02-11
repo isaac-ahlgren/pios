@@ -1,4 +1,5 @@
 #include "list.h"
+#include "led.h"
 
 extern long __bss_start, __bss_end; //https://sourceware.org/binutils/docs/ld/Source-Code-Reference.html
 int i; //Or else there is no bss segment to clear
@@ -32,6 +33,15 @@ void kernel_main() {
     list_remove(1, &list); //Removes value 1 from the list
     list_remove(3, &list); //Removes value 3 from the list
 
+    led_init();
     while(1){
+        led_on();
+
+        delay(500);
+        //for (int i = 0; i < 100000; ++i);
+        
+        led_off();
+        delay(500);
+        //for (int i = 0; i < 100000; ++i);
     }
 }
