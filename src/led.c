@@ -6,7 +6,7 @@ void led_init() {
 
     uint32_t* reg = (uint32_t*) GPFSEL4; //Location of GPIO pin 42
 
-    *reg &= 0xFFFFFE40;
+    *reg &= 0xFFFFFE3F;
     *reg |= 0x00000040;
 }
 
