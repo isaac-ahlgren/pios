@@ -37,11 +37,11 @@ void kernel_main() {
     while(1){
         led_on();
 
-       //delay(500);
-        for (int i = 0; i < 100000; ++i);
+        delay(500);
+        //for (int i = 0; i < 100000; ++i);
         
         led_off();
-        //delay(500);
-        for (int i = 0; i < 100000; ++i);
+        delay(500);
+        //for (int i = 0; i < 100000; ++i);
     }
 }
