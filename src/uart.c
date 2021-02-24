@@ -37,7 +37,7 @@ void miniuart_init() {
 void uart_send_char(char c) {
     volatile uint32_t* reg = AUX_MU_LCR_REG;
 
-    while (!(*reg & (1 << 5))); //Check if can transmit
+    //while (!(*reg & (1 << 5))); //Check if can transmit
 
     reg = AUX_MU_IO_REG;
     *reg = c;
