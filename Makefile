@@ -18,6 +18,7 @@ OBJS = \
 	list.o \
 	led.o \
 	kernel_util.o \
+	uart.o \
 
 
 

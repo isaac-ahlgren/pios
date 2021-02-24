@@ -4,7 +4,7 @@
 
 void led_init() {
 
-    uint32_t* reg = (uint32_t*) GPFSEL4; //Location of GPIO pin 42
+    volatile uint32_t* reg = GPFSEL4; //Location of GPIO pin 42
 
     *reg &= 0xFFFFFE3F;
     *reg |= 0x00000040;
@@ -12,14 +12,14 @@ void led_init() {
 
 void led_on() {
 
-    uint32_t* reg = (uint32_t*) GPSET1; //Location of GPIO control
+    volatile uint32_t* reg = GPSET1; //Location of GPIO control
 
     *reg |= (1 << 10);
 }
 
 void led_off() {
 
-    uint32_t* reg = (uint32_t*) GPCLR1; //Location of GPIO clear
+    volatile uint32_t* reg = GPCLR1; //Location of GPIO clear
 
     *reg |= (1 << 10);
 }

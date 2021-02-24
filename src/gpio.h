@@ -3,19 +3,19 @@
 
 #define GPIOBASE 	0xFE200000
 
-#define GPFSEL0		(GPIOBASE)
-#define GPFSEL1		(GPIOBASE+0x04)
-#define GPFSEL2		(GPIOBASE+0x08)
-#define GPFSEL3		(GPIOBASE+0x0C)
-#define GPFSEL4		(GPIOBASE+0x10)
-#define GPFSEL5		(GPIOBASE+0x14)
+#define GPFSEL0		(volatile uint32_t*) (GPIOBASE)
+#define GPFSEL1		(volatile uint32_t*) (GPIOBASE+0x04)
+#define GPFSEL2		(volatile uint32_t*) (GPIOBASE+0x08)
+#define GPFSEL3		(volatile uint32_t*) (GPIOBASE+0x0C)
+#define GPFSEL4		(volatile uint32_t*) (GPIOBASE+0x10)
+#define GPFSEL5		(volatile uint32_t*) (GPIOBASE+0x14)
 
-#define GPSET0		(GPIOBASE+0x1C)
-#define GPSET1		(GPIOBASE+0x20)
+#define GPSET0		(volatile uint32_t*) (GPIOBASE+0x1C)
+#define GPSET1		(volatile uint32_t*) (GPIOBASE+0x20)
 
-#define GPCLR0		(GPIOBASE+0x28)
-#define GPCLR1		(GPIOBASE+0x2C)
+#define GPCLR0		(volatile uint32_t*) (GPIOBASE+0x28)
+#define GPCLR1		(volatile uint32_t*) (GPIOBASE+0x2C)
 
-#define GPPREG1	 	(GPIOBASE+0xE4)
+#define GPPREG0	 	(volatile uint32_t*) (GPIOBASE+0xE4)
 
 #endif
