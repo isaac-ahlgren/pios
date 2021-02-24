@@ -3,13 +3,13 @@
 #include "aux.h"
 #include "uart.h"
 
-void init_miniuart() {
+void miniuart_init() {
     
     volatile uint32_t* reg;
 
     reg = GPPREG0; //Set pull down resistor
-    *reg &= ~(3 << 30 || 3 << 28);
-    *reg &= (1 << 30 || 1 << 28);
+    *reg &= ~(3 << 30 | 3 << 28);
+    *reg &= (1 << 30 | 1 << 28);
 
     reg  = GPFSEL1; //Set alt mode 5 for gpio14 and gpio15
     *reg &= ~(0x3F << 12);
