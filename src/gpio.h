@@ -1,7 +1,7 @@
 #ifndef _GPIO_H
 #define _GPIO_H
 
-#define GPIOBASE 	0x7E215000
+#define GPIOBASE 	0xFE200000
 
 #define GPFSEL0		(GPIOBASE)
 #define GPFSEL1		(GPIOBASE+0x04)

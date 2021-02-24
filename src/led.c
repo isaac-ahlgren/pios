@@ -6,7 +6,7 @@ void led_init() {
 
     uint32_t* reg = (uint32_t*) GPFSEL4; //Location of GPIO pin 42
 
-    *reg &= 0xFFFFFE40;
+    *reg &= 0xFFFFFE3F;
     *reg |= 0x00000040;
 }
 
@@ -26,7 +26,7 @@ void led_off() {
 
 void delay(int ms) {
 
-    volatile uint32_t* time = (uint32_t*) 0x3F003004;
+    volatile uint32_t* time = (uint32_t*) 0xFE003004;
     uint32_t targtime = ms*1000 + *time;
 
     while (targtime > *time)
