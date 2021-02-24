@@ -17,6 +17,7 @@ OBJS = \
 	kernel_main.o \
 	list.o \
 	led.o \
+	kernel_util.o \
 
 
 
