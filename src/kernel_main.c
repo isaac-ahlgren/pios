@@ -19,14 +19,14 @@ void kernel_main() {
     int lvl = get_except_lvl();
     
     miniuart_init();
-    led_init();
+   // led_init();
     while(1){
-        led_on();
+     //   led_on();
 
-        delay(500);
+       // delay(500);
         
-        led_off();
-        delay(500);
+       // led_off();
+        //delay(500);
         uart_send_string("Hello World\n");
     }
 }
