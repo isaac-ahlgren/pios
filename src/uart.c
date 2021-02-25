@@ -18,6 +18,9 @@ void miniuart_init() {
     reg = AUX_ENABLES; //enable mini uart
     *reg = 1;
 
+    reg = AUX_MU_CNTL_REG; //disable autoflow and reviever and transmitter
+    *reg &= 0;
+
     reg = AUX_MU_IER_REG; //disable recieve and transmit interupts
     *reg &= 0;
 
