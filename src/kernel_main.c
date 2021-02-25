@@ -18,7 +18,7 @@ void bss_clear() {
 void kernel_main() {
     int lvl = get_except_lvl();
     
-    miniuart_init();
+   // miniuart_init();
     //led_init();
     while(1){
         //led_on();

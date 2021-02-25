@@ -19,10 +19,10 @@ void miniuart_init() {
     *reg = 1;
 
     reg = AUX_MU_IER_REG; //disable recieve and transmit interupts
-    *reg &= ~(0x3);
+    *reg &= 0;
 
     reg = AUX_MU_LCR_REG; //enable 8-bit usage
-    *reg |= 1;
+    *reg |= 3;
 
     reg = AUX_MU_MCR_REG; //set rts line as high
     *reg = 0;
@@ -37,7 +37,7 @@ void miniuart_init() {
 void uart_send_char(char c) {
     volatile uint32_t* reg = AUX_MU_LCR_REG;
 
-    //while (!(*reg & (1 << 5))); //Check if can transmit
+   // while (!(*reg & (1 << 5))); //Check if can transmit
 
     reg = AUX_MU_IO_REG;
     *reg = c;

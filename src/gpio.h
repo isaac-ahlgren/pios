@@ -1,7 +1,11 @@
 #ifndef _GPIO_H
 #define _GPIO_H
 
-#define GPIOBASE 	0xFE200000
+#include <stdint.h>
+#include "pbase.h"
+
+
+#define GPIOBASE 	(PBASE+0x200000)
 
 #define GPFSEL0		(volatile uint32_t*) (GPIOBASE)
 #define GPFSEL1		(volatile uint32_t*) (GPIOBASE+0x04)

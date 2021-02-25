@@ -1,9 +1,12 @@
 #ifndef _AUX_H
 #define _AUX_H
 
-#define AUX_BASE 	0xFE215000
+#include <stdint.h>
+#include "pbase.h"
 
-#define AUX_ENABLES	    (volatile uint32_t*) (AUX_BASE+0x04)
+#define AUX_BASE 	(PBASE+0x215000)
+
+#define AUX_ENABLES	(volatile uint32_t*) (AUX_BASE+0x04)
 #define AUX_MU_IO_REG	(volatile uint32_t*) (AUX_BASE+0x40)
 #define AUX_MU_IER_REG  (volatile uint32_t*) (AUX_BASE+0x44)
 #define AUX_MU_LCR_REG  (volatile uint32_t*) (AUX_BASE+0x4C)
