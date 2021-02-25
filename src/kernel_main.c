@@ -27,6 +27,6 @@ void kernel_main() {
         
        // led_off();
         //delay(500);
-        uart_send_string("Hello World\n");
+        esp_vprintf(uart_send_string, "Fuc%c you\n", 'k');
     }
 }
