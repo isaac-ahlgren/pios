@@ -37,7 +37,7 @@ void miniuart_init() {
     *reg |= 3;    
 }
 
-void uart_send_char(char c) {
+void uart_send_char(int c) {
     volatile uint32_t* reg = AUX_MU_LSR_REG;
 
     while (!(*reg & (1 << 5))); //Check if can transmit
@@ -60,7 +60,7 @@ char uart_get_char() {
 void uart_send_string(char* s) {
 
     while (*s != '\0') {
-        uart_send_char((char) *s);
+        uart_send_char((int) *s);
         s++;
     }
 }

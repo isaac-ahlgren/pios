@@ -6,7 +6,7 @@ OBJDUMP := objdump
 OBJCOPY := objcopy
 CONFIGS := -DCONFIG_HEAP_SIZE=4096
 
-CFLAGS := -O0 -ffreestanding -fno-pie -fno-stack-protector -g3 -Wall $(CONFIGS)
+CFLAGS := -O0 -ffreestanding -fno-pie -fno-stack-protector -g3 -Wall -mgeneral-regs-only $(CONFIGS)
 
 
 ODIR = obj
@@ -19,6 +19,7 @@ OBJS = \
 	led.o \
 	kernel_util.o \
 	uart.o \
+	rprintf.o \
 
 
 
