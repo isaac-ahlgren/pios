@@ -1,4 +1,3 @@
-#include <stdint.h>
 #include "gpio.h"
 #include "aux.h"
 #include "uart.h"
@@ -6,10 +5,6 @@
 void miniuart_init() {
     
     volatile uint32_t* reg;
-
-    reg = GPPREG0; //Set pull down resistor
-    *reg &= ~(3 << 30 | 3 << 28);
-    *reg &= (1 << 30 | 1 << 28);
 
     reg  = GPFSEL1; //Set alt mode 5 for gpio14 and gpio15
     *reg &= ~(0x3F << 12);
@@ -37,7 +32,7 @@ void miniuart_init() {
     *reg |= 3;    
 }
 
-void uart_send_char(int c) {
+void uart_send_char(uint32_t c) {
     volatile uint32_t* reg = AUX_MU_LSR_REG;
 
     while (!(*reg & (1 << 5))); //Check if can transmit

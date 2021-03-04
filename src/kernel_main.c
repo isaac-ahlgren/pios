@@ -19,13 +19,13 @@ void bss_clear() {
 void kernel_main() {
     
     miniuart_init();
-   // led_init();
+    led_init();
     while(1){
-     //   led_on();
-       // delay(500);
+       led_on();
+       delay(500);
         
-       // led_off();
-        //delay(500);
+       led_off();
+       delay(500);
        esp_printf((func_ptr) uart_send_char, "Fuc%c you\n", 'k');
     }
 }
