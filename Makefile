@@ -20,6 +20,7 @@ OBJS = \
 	kernel_util.o \
 	uart.o \
 	rprintf.o \
+	page.o \
 
 
 
