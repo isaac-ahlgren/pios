@@ -28,9 +28,11 @@ struct ppage *allocate_physical_pages(unsigned int npages) {
     	while (npages-- && node->next)
             node = node->next;
 
-        free_pages = node->next;
-        node->next = 0;
-        free_pages->prev = 0;
+        free_pages = node;
+        if (free_pages) { //Disconnect from list
+	    free_pages->prev->next = 0;
+            free_pages->prev = 0;
+	}
     }
     
     return ret;
