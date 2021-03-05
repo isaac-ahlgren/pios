@@ -3,10 +3,11 @@
 
 struct list_element {
     struct list_element *next;
-    int val;
+    struct list_element *prev;
+    void* payload;
 };
 
-int list_add(struct list_element*, struct list_element**);
-int list_remove(int val, struct list_element**);
+void list_add(struct list_element*, struct list_element**);
+void list_remove(struct list_element*);
 
 #endif

@@ -1,59 +1,65 @@
+#include "common.h"
 #include "page.h"
+#include "list.h"
 
 struct ppage physical_page_array[128];
-struct ppage* free_pages;
+struct ppage* free_pages = 0;
 
 void init_pfa_list(void) {
     
-    for (int j = 0; j < 128; j++) {
-	physical_page_array[j] = (const struct ppage) { 0 };
-    }
+    struct ppage** free = &free_pages;
+    unsigned long addr = (unsigned long) (((unsigned long) &__end) & ~(0x200000 - 1)) + 0x200000;
 
-    for (int i = 0; i < 127; i++) {
-        physical_page_array[i].next   = &physical_page_array[i+1];
-	physical_page_array[i+1].prev = &physical_page_array[i];
-    }
-
-
-    free_pages = physical_page_array;
+    for (int i = 0; i < 128; i++) {
+	physical_page_array[i].physical_addr = (void*) addr;
+        list_add((struct list_element*) &physical_page_array[i], (struct list_element**)free);
+	addr += 0x200000;
+    }	
 }
 
 struct ppage *allocate_physical_pages(unsigned int npages) {
     
-    struct ppage *ret  = free_pages;
+    struct ppage *ret  = 0;
 
     if (npages && free_pages) {
-        struct ppage *node = free_pages;
-    
-    	while (npages-- && node->next)
+
+    	struct ppage* node = free_pages;
+	ret = free_pages;
+
+	while (node && npages--)
             node = node->next;
 
-        free_pages = node;
-        if (free_pages) { //Disconnect from list
-	    free_pages->prev->next = 0;
-            free_pages->prev = 0;
+	free_pages = node;
+
+	if (node) {
+            node->prev->next = 0;
+	    node->prev = 0;
 	}
     }
-    
+
     return ret;
 }
 
 void free_physical_pages(struct ppage *ppage_list) {
 
-    if (free_pages) {
-        struct ppage *node = ppage_list;
-    
-        while (node->next)
-            node = node->next;
-    
-        node->next = free_pages;
-	free_pages->prev = node;
+    if (ppage_list) {
+        
+	if (free_pages) { //Connect to back
+	    struct ppage* node = ppage_list;
+	
+	    if (node->prev) node->prev->next = 0;
+	    node->prev = 0;	
 
-	if (ppage_list->prev) //Disconnect previous' connection to freed mem
-	    ppage_list->prev->next = 0;
+            while (node->next)
+	        node = node->next;
+	
+	    free_pages->prev = node;
+	    node->next = free_pages;
+	}
+
+	free_pages = ppage_list;
     }
-    
-    free_pages = ppage_list;
+
 }
 
 struct ppage *getfree() { return free_pages; }

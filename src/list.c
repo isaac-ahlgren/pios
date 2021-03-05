@@ -1,36 +1,27 @@
 #include "list.h"
 
-int list_add(struct list_element* new, struct list_element** head) {
+void list_add(struct list_element* new, struct list_element** head) {
 
-    if (!new || !head) return 0;
+    if (!new || !head) return;
 
-    new->next = *head; //Assuming order does not matter
+    //Appends to beginning assuming order never matters
+    if (*head) (*head)->prev = new;
+    new->next = *head;
     *head = new;
     
-    return 1;
 }
 
-int list_remove(int val, struct list_element** head) {
-    int ret = 0;
+void list_remove(struct list_element* ele) {
 
-    if (!head) return ret;
-
-    struct list_element* n = *head;
-
-    if (n->val == val) { //Case if first is val
-        *head = n->next;
-        ret = 1;
+    if (ele) {
+        
+        if (ele->next)
+	    ele->next->prev = ele->prev;
+	if (ele->prev)
+	    ele->prev->next = ele->next;
+        
+	ele->next = 0;
+	ele->prev = 0;
     }
-
-    while (!ret && n->next) { //Normal Case
-
-        if (val == n->next->val) {
-            n->next = n->next->next;
-            ret = 1;
-            break;
-        }
-        n = n->next;
-    }
-    
-    return ret;
+        
 }
