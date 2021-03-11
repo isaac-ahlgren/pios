@@ -26,7 +26,7 @@ void miniuart_init() {
     *reg = 0;
 
     reg = AUX_MU_BAUD_REG; //set baud rate as 115200
-    *reg = 270;
+    *reg = 135;
 
     reg = AUX_MU_CNTL_REG; //Enable transmission and reception 
     *reg |= 3;    
