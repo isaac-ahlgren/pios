@@ -73,10 +73,9 @@ zero_out_tables:
 
     LDR     x2, =0x200000                // address of first table
     LDR     x3, =0x2000                  // combined length of all tables
-    LSR     x3, x3, #5                   // number of required STP instructions
-    FMOV    d0, xzr                      // clear q0
+    LSR     x3, x3, #5                   // number of required STP instructions                    
 1:
-    STP     q0, q0, [x2], #32            // zero out 4 table entries at a time
+    STR     xzr, [x2], #32            // zero out 4 table entries at a time
     SUBS    x3, x3, #1
     B.NE    1b
 
@@ -112,7 +111,7 @@ program_table_1_entry_0:
     LDR     x11, =1                      // number of contiguous entries
     LDR     x12, =0x0                    // output address of entry[idx]
 1:
-    ORR     x12, x12, x4                 // merge output address with template
+    ORR     x12, x12, x5                 // merge output address with template
     STR     X12, [x8, x10, lsl #3]       // write entry into table
     ADD     x10, x10, #1                 // prepare for next entry idx+1
     ADD     x12, x12, x9                 // add chunk to address

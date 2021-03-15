@@ -3,6 +3,7 @@
 #include "rprintf.h"
 #include "uart.h"
 #include "page.h"
+#include "mmu.h"
 #include "common.h"
 
 int i; //Or else there is no bss segment to clear
@@ -18,7 +19,8 @@ void bss_clear() {
 }
 
 void kernel_main() {
-    
+   
+    mmu_on();   	
     miniuart_init();
 //    led_init();
     

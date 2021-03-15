@@ -87,9 +87,6 @@ maincore:
  
     // clear bss
     bl       bss_clear
-    
-    // set up mmu
-    bl       mmu_on
  
     // jump to C code, should not return
     bl      kernel_main
