@@ -20,7 +20,7 @@ void bss_clear() {
 
 void kernel_main() {
    
-    mmu_on();   	
+   // mmu_on();   	
     miniuart_init();
 //    led_init();
     
