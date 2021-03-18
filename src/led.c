@@ -24,11 +24,3 @@ void led_off() {
     *reg |= (1 << 10);
 }
 
-void delay(int ms) {
-
-    volatile uint32_t* time = (uint32_t*) 0xFE003004;
-    uint32_t targtime = ms*1000 + *time;
-
-    while (targtime > *time)
-        ;
-}

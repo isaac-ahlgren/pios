@@ -1,4 +1,5 @@
 #include "led.h"
+#include "delay.h"
 #include "kernel_util.h"
 #include "rprintf.h"
 #include "uart.h"
@@ -19,8 +20,7 @@ void bss_clear() {
 }
 
 void kernel_main() {
-   
-   // mmu_on();   	
+     	
     miniuart_init();
 //    led_init();
     
