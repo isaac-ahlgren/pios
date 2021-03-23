@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #define CLUSTER_SIZE 4096
+#define SECTOR_SIZE 512
 #define SECTORS_PER_CLUSTER (CLUSTER_SIZE/SECTOR_SIZE)
 
 #define FILE_ATTRIBUTE_SUBDIRECTORY 0x10
@@ -72,12 +73,15 @@ struct root_directory_entry {
  * Stores info about an open file
  *
  */
-struct file {
+typedef struct file {
     struct file *next;
     struct file *prev;
     struct root_directory_entry rde;
     uint32_t start_cluster;
-};
+} FILE;
 
+int fat_init();
+int file_open(FILE*, char*);
+int read_file(FILE*, char*, unsigned int);
 
 #endif

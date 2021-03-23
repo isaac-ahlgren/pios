@@ -1,9 +1,9 @@
 
 
-CC := gcc
-LD := ld
-OBJDUMP := objdump
-OBJCOPY := objcopy
+CC := aarch64-none-elf-gcc
+LD := aarch64-none-elf-ld
+OBJDUMP := aarch64-none-elf-objdump
+OBJCOPY := aarch64-none-elf-objcopy
 CONFIGS := -DCONFIG_HEAP_SIZE=4096
 
 CFLAGS := -O0 -ffreestanding -fno-pie -fno-stack-protector -g3 -Wall -mgeneral-regs-only $(CONFIGS)
@@ -22,6 +22,9 @@ OBJS = \
 	uart.o \
 	rprintf.o \
 	page.o \
+	sd.o \
+	delay.o \
+	fat.o \
 
 
 
@@ -62,7 +65,7 @@ disassemble:
 
 rootfs.img:
 	dd if=/dev/zero of=rootfs.img bs=1M count=16
-	mkfs.fat -F12 rootfs.img
+	mkfs.fat -F16 rootfs.img
 	sudo mount rootfs.img /mnt
 	sudo mkdir -p /mnt/boot/firmware
 	sudo mkdir /mnt/bin

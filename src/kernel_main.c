@@ -3,11 +3,10 @@
 #include "kernel_util.h"
 #include "rprintf.h"
 #include "uart.h"
-#include "page.h"
 #include "mmu.h"
+#include "fat.h"
+#include "sd.h"
 #include "common.h"
-
-int i; //Or else there is no bss segment to clear
 
 void bss_clear() {
     long * start = &__bss_start;
@@ -22,69 +21,17 @@ void bss_clear() {
 void kernel_main() {
      	
     miniuart_init();
+    sd_init();
 //    led_init();
-    
-    esp_printf((func_ptr)uart_send_char, "END OF KERNEL: %x\n", &__end);
-    uart_send_char('\n');
+    fat_init();
+    FILE file;
+    file_open(&file, "/bin/stuff");
 
-    init_pfa_list();
-    int i = 0;
-    struct ppage* node = getfree();
+    char buf[21];
+    read_file(&file, buf, 20);
+    buf[21] = '\0';
 
-    uart_send_string("AFTER INITIALIZATION\n");
-    while (node) {
-        esp_printf((func_ptr) uart_send_char, "%d addr: %x\n", ++i, node->physical_addr);
-	node = node->next;
-    }
-    uart_send_char('\n');
-
-    uart_send_string("ALLOCATED PAGES\n");
-    i = 0;
-    struct ppage* page = allocate_physical_pages(10);
-    node = page;
-    while (node) {
-        esp_printf((func_ptr) uart_send_char, "%d addr: %x\n", ++i, node->physical_addr); 
-        node = node->next;
-    }
-    uart_send_char('\n');
-
-    uart_send_string("FREED PAGES\n");
-    i = 0;
-    node = getfree();
-    while (node) {
-        esp_printf((func_ptr) uart_send_char, "%d addr: %x\n", ++i, node->physical_addr);
-	node = node->next;
-    }
-    uart_send_char('\n');
-
-    free_physical_pages(page);
-    uart_send_string("FREED PAGES AFTER FREEING\n");
-    i = 0;
-    node = getfree();
-    while (node) {
-        esp_printf((func_ptr) uart_send_char, "%d addr: %x\n", ++i, node->physical_addr);
-	node = node->next;
-    }
-    uart_send_char('\n');
-
-    page = allocate_physical_pages(5);
-    node = page->next;
-    free_physical_pages(node);
-
-    i = 0;
-    while (page) {
-        esp_printf((func_ptr) uart_send_char, "%d addr: %x\n", ++i, node->physical_addr);
-	page = page->next;
-    }
-    uart_send_char('\n');
-
-    i = 0;
-    node = getfree();
-    while (node) {
-        esp_printf((func_ptr) uart_send_char, "%d addr: %x\n", ++i, node->physical_addr);
-	node = node->next;
-    }
-
+    uart_send_string(buf);
 
     while(1){
  //    led_on();
