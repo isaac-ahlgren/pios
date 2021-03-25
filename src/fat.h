@@ -82,6 +82,6 @@ typedef struct file {
 
 int fat_init();
 int file_open(FILE*, char*);
-int read_file(FILE*, char*, unsigned int);
+int read_file(FILE*, void*, unsigned int);
 
 #endif

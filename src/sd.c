@@ -208,18 +208,18 @@ int sd_init()
     cnt=6; r=0; while(!(r&ACMD41_CMD_COMPLETE) && cnt--) {
         delay_cycles(400);
         r=sd_cmd(CMD_SEND_OP_COND,ACMD41_ARG_HC);
-        uart_send_string("EMMC: CMD_SEND_OP_COND returned ");
+            uart_send_string("EMMC: CMD_SEND_OP_COND returned ");
         if(r&ACMD41_CMD_COMPLETE)
             uart_send_string("COMPLETE ");
         if(r&ACMD41_VOLTAGE)
             uart_send_string("VOLTAGE ");
         if(r&ACMD41_CMD_CCS)
-            uart_send_string("CCS ");
+        //    uart_send_string("CCS ");
         //uart_hex(r>>32);
         //uart_hex(r);
         uart_send_string("\n");
         if(sd_err!=SD_TIMEOUT && sd_err!=SD_OK ) {
-            uart_send_string("ERROR: EMMC ACMD41 returned error\n");
+        //    uart_send_string("ERROR: EMMC ACMD41 returned error\n");
             return sd_err;
         }
     }
@@ -230,7 +230,7 @@ int sd_init()
     sd_cmd(CMD_ALL_SEND_CID,0);
 
     sd_rca = sd_cmd(CMD_SEND_REL_ADDR,0);
-    uart_send_string("EMMC: CMD_SEND_REL_ADDR returned ");
+    //uart_send_string("EMMC: CMD_SEND_REL_ADDR returned ");
     //uart_hex(sd_rca>>32);
     //uart_hex(sd_rca);
     uart_send_string("\n");

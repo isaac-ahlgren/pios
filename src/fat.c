@@ -47,8 +47,9 @@ int get_filename(char* name_buffer, char* ext_buffer, char* path) {
     int ret = 0;
     int buff_i = 0;
 
-    if (*path++ != '/')
+    if (*path++ != '/') {
         return ret;
+    }
 
     // get file name
     while (*path != '.' && *path != '\0' && *path != '/') {
@@ -191,26 +192,33 @@ int file_open(FILE* f, char* path) {
     return ret;
 }
 
-int read_file(FILE* f, char* buf, unsigned int bytes) {
+int read_file(FILE* f, void* buf, unsigned int bytes) {
 
     int bytes_read = 0;
+    int bytes_per_cluster = bs->num_sectors_per_cluster*bs->bytes_per_sector;
+    
     int curr_cluster = f->start_cluster;
     int curr_sector = ((curr_cluster - 2) * bs->num_sectors_per_cluster) + first_data_sector;
-    int sectors = (bytes + SECTOR_SIZE - 1) / SECTOR_SIZE;
+    
     unsigned short* fat = (unsigned short*) fat_table;
+    unsigned char* res_buffer = (unsigned char*) buf;
+    unsigned char clus_buffer[8*SECTOR_SIZE];
 
-    while (sectors > 0) {
+    while (bytes > 0) {
 
-	// read current cluster    
-        for (int i = 0; sectors > 0 && i < bs->num_sectors_per_cluster; i++, sectors--) {
-
-            bytes_read += sd_readblock(curr_sector + i, (unsigned char*) buf, 1);
-	    buf += bytes_read;
-
-        }
+	// read current cluster
+        sd_readblock(curr_sector, clus_buffer, bs->num_sectors_per_cluster);
+	
+	
+	unsigned int bytes_needed = (bytes < bytes_per_cluster) ? bytes :  bytes_per_cluster;
+	for (int i = 0; i < bytes_needed; i++) {
+	    *res_buffer++ = clus_buffer[i];
+	    bytes--; bytes_read++;
+	    
+	}
 
 	// find next cluster
-	if (sectors > 0 && fat[curr_cluster] >= 0xfff8) {
+	if (fat[curr_cluster] >= 0xfff8) {
 	    curr_cluster = fat[curr_cluster];
 	    curr_sector = ((curr_cluster - 2) * bs->num_sectors_per_cluster) + first_data_sector;
 	}
