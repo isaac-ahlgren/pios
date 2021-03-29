@@ -1,5 +1,6 @@
 #include "fat.h"
 #include "sd.h"
+#include "uart.h"
 #include "rprintf.h"
 
 struct boot_sector *bs;
@@ -105,6 +106,11 @@ int fat_init() {
 	ret = 0;
 	return ret;
     }
+    
+    esp_printf((func_ptr) uart_send_char, "Total Sectors: %d\n", bs->total_sectors);
+    esp_printf((func_ptr) uart_send_char, "Bytes Per Sector: %d\n", bs->bytes_per_sector);
+    esp_printf((func_ptr) uart_send_char, "Fat Tables: %d\n", bs->num_fat_tables);
+    esp_printf((func_ptr) uart_send_char, "Number Root Directory Entries: %d\n", bs->num_root_dir_entries);
 
     sd_readblock(1, (unsigned char*) fat_table, 8);
 
@@ -197,10 +203,9 @@ int read_file(FILE* f, void* buf, unsigned int bytes) {
     int bytes_read = 0;
     int bytes_per_cluster = bs->num_sectors_per_cluster*bs->bytes_per_sector;
     
-    int curr_cluster = f->start_cluster;
-    int curr_sector = ((curr_cluster - 2) * bs->num_sectors_per_cluster) + first_data_sector;
+    unsigned short curr_cluster = f->start_cluster;
+    unsigned short curr_sector = ((curr_cluster - 2) * bs->num_sectors_per_cluster) + first_data_sector;
     
-    unsigned short* fat = (unsigned short*) fat_table;
     unsigned char* res_buffer = (unsigned char*) buf;
     unsigned char clus_buffer[8*SECTOR_SIZE];
 
@@ -218,10 +223,12 @@ int read_file(FILE* f, void* buf, unsigned int bytes) {
 	}
 
 	// find next cluster
-	if (fat[curr_cluster] >= 0xfff8) {
-	    curr_cluster = fat[curr_cluster];
-	    curr_sector = ((curr_cluster - 2) * bs->num_sectors_per_cluster) + first_data_sector;
+	unsigned int index = (curr_cluster * 2) % bs->bytes_per_sector;
+	curr_cluster = *(unsigned short*)fat_table[index];
+	if (curr_cluster >= 0xfff8) {
+	    break;
 	}
+	curr_sector = ((curr_cluster - 2) * bs->num_sectors_per_cluster) + first_data_sector;
     }
 
     return bytes_read;
