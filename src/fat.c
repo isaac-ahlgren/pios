@@ -112,7 +112,7 @@ int fat_init() {
     esp_printf((func_ptr) uart_send_char, "Fat Tables: %d\n", bs->num_fat_tables);
     esp_printf((func_ptr) uart_send_char, "Number Root Directory Entries: %d\n", bs->num_root_dir_entries);
 
-    sd_readblock(1, (unsigned char*) fat_table, 8);
+    sd_readblock(bs->num_reserved_sectors, (unsigned char*) fat_table, 8);
 
     root_sector = bs->num_fat_tables*bs->num_sectors_per_fat + bs->num_reserved_sectors + bs->num_hidden_sectors;
     
@@ -224,7 +224,7 @@ int read_file(FILE* f, void* buf, unsigned int bytes) {
 
 	// find next cluster
 	unsigned int index = (curr_cluster * 2) % bs->bytes_per_sector;
-	curr_cluster = *(unsigned short*)fat_table[index];
+	curr_cluster = *(unsigned short*)&fat_table[index];
 	if (curr_cluster >= 0xfff8) {
 	    break;
 	}
