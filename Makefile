@@ -2,7 +2,7 @@
 
 CC := aarch64-none-elf-gcc
 LD := aarch64-none-elf-ld
-OBJDUMP := aarch64=none-elf-objdump
+OBJDUMP := aarch64-none-elf-objdump
 OBJCOPY := aarch64-none-elf-objcopy
 CONFIGS := -DCONFIG_HEAP_SIZE=4096
 
@@ -17,14 +17,14 @@ OBJS = \
 	kernel_main.o \
 	mmu.o \
 	list.o \
-	led.o \
-	kernel_util.o \
 	uart.o \
 	rprintf.o \
-	page.o \
 	sd.o \
 	delay.o \
 	fat.o \
+	elf.o \
+        clib.o \
+	page.o \
 
 
 
@@ -61,7 +61,7 @@ run:
 	qemu-system-aarch64 -machine raspi3 -kernel kernel8.img -hda rootfs.img -serial null -serial stdio -monitor none -nographic -k en-us
 
 disassemble:
-	$(OBJDUMP) -D kernel8.elf
+	$(OBJDUMP) -p kernel8.elf
 
 rootfs.img:
 	dd if=/dev/zero of=rootfs.img bs=1M count=16

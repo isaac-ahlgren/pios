@@ -8,12 +8,12 @@ struct ppage* free_pages = 0;
 void init_pfa_list(void) {
     
     struct ppage** free = &free_pages;
-    unsigned long addr = (unsigned long) (((unsigned long) &__end) & ~(0x200000 - 1)) + 0x200000;
+    unsigned long addr = (unsigned long) (((unsigned long) &__end) & ~(PAGE_SIZE - 1)) + PAGE_SIZE;
 
     for (int i = 0; i < 128; i++) {
 	physical_page_array[i].physical_addr = (void*) addr;
         list_add((struct list_element*) &physical_page_array[i], (struct list_element**)free);
-	addr += 0x200000;
+	addr += PAGE_SIZE;
     }	
 }
 
@@ -61,6 +61,4 @@ void free_physical_pages(struct ppage *ppage_list) {
     }
 
 }
-
-struct ppage *getfree() { return free_pages; }
    

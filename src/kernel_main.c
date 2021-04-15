@@ -1,6 +1,5 @@
 #include "led.h"
 #include "delay.h"
-#include "kernel_util.h"
 #include "rprintf.h"
 #include "uart.h"
 #include "mmu.h"
@@ -28,9 +27,13 @@ void kernel_main() {
     file_open(&file, "/bin/stuff");
 
     char buf[21];
-    read_file(&file, buf, 20);
-    buf[21] = '\0';
+    read_file(&file, buf, 9);
+    buf[9] = '\0';
 
+    uart_send_string(buf);
+
+    read_file(&file, buf, 9);
+    buf[9] = '\0';
     uart_send_string(buf);
 
     while(1){

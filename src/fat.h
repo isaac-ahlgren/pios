@@ -76,12 +76,15 @@ struct root_directory_entry {
 typedef struct file {
     struct file *next;
     struct file *prev;
+    long unsigned int offset;
     struct root_directory_entry rde;
     uint32_t start_cluster;
 } FILE;
 
 int fat_init();
 int file_open(FILE*, char*);
-int read_file(FILE*, void*, unsigned int);
+int read_file(FILE*, unsigned char*, unsigned int);
+void set_offset(FILE*, long unsigned int);
+unsigned int get_offset(FILE*);
 
 #endif
