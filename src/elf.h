@@ -124,5 +124,7 @@ typedef struct {
 #define PF_X       0x1
 #define PF_W       0x2
 #define PF_R       0x4
+
+bool exec(char*, char* argv[]);
     
 #endif

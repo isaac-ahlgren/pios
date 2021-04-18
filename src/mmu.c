@@ -1,6 +1,6 @@
 
 
-
+#include "pbase.h"
 #include "mmu.h"
 
 
@@ -105,7 +105,7 @@ int loadPageTable(struct table_descriptor_stage1 *L1table) {
 void mmu_on() {
     
     mapPages(0,0);            //Map kernel space
-    mapPages(0x200000, 0x200000);
+    mapPages(PBASE+0x00300000,PBASE+0x00300000); //Map SD card addresses at least
     loadPageTable(L1table); //Load L1 table address into lower address page table reg and start mmu
     
 }

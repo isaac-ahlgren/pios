@@ -17,32 +17,15 @@ void bss_clear() {
     }
 }
 
-void kernel_main() {
-     	
+void kernel_main() {    	
     miniuart_init();
     sd_init();
-//    led_init();
+    mmu_on();
     fat_init();
-    FILE file;
-    file_open(&file, "/bin/stuff");
-
-    char buf[21];
-    read_file(&file, buf, 9);
-    buf[9] = '\0';
-
-    uart_send_string(buf);
-
-    read_file(&file, buf, 9);
-    buf[9] = '\0';
-    uart_send_string(buf);
+    
+    exec("/bin/a.out");
 
     while(1){
- //    led_on();
- //     delay(500);
-        
- //     led_off();
- //     delay(500);
- //     esp_printf((func_ptr) uart_send_char, "F");
-      //uart_send_char(46);
+
     }
 }
