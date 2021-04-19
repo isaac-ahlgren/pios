@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include "led.h"
 #include "delay.h"
 #include "rprintf.h"
@@ -5,6 +6,7 @@
 #include "mmu.h"
 #include "fat.h"
 #include "sd.h"
+#include "elf.h"
 #include "common.h"
 
 void bss_clear() {
@@ -23,7 +25,7 @@ void kernel_main() {
     mmu_on();
     fat_init();
     
-    exec("/bin/a.out");
+    exec("/bin/a.out", 0);
 
     while(1){
 

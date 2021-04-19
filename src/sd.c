@@ -94,34 +94,68 @@ int sd_cmd(unsigned int code, unsigned int arg)
  */
 int sd_readblock(unsigned int lba, unsigned char *buffer, unsigned int num)
 {
-    int r,c=0,d;
-    if(num<1) num=1;
-        uart_send_string("sd_readblock lba ");/*uart_hex(lba);*/uart_send_string(" num ");/*uart_hex(num);*/uart_send_string("\n");
-//    printk("[sd_readblock] lba = %d num = %d\r\n", lba, num);
-    if(sd_status(SR_DAT_INHIBIT)) {sd_err=SD_TIMEOUT; return 0;}
-    unsigned int *buf=(unsigned int *)buffer;
+    int r, c = 0, d;
+
+    if(num<1) { 
+        num = 1;
+    }
+
+    if(sd_status(SR_DAT_INHIBIT)) {
+        sd_err=SD_TIMEOUT;
+        return 0;
+    }
+
+    unsigned int *buf = (unsigned int *) buffer;
     if(sd_scr[0] & SCR_SUPP_CCS) {
+
         if(num > 1 && (sd_scr[0] & SCR_SUPP_SET_BLKCNT)) {
+
             sd_cmd(CMD_SET_BLOCKCNT,num);
-            if(sd_err) return 0;
+
+            if(sd_err) { 
+                return 0;
+            }
         }
+
         *EMMC_BLKSIZECNT = (num << 16) | 512;
         sd_cmd(num == 1 ? CMD_READ_SINGLE : CMD_READ_MULTI,lba);
-        if(sd_err) return 0;
-    } else {
-        *EMMC_BLKSIZECNT = (1 << 16) | 512;
-    }
-    while( c < num ) {
-        if(!(sd_scr[0] & SCR_SUPP_CCS)) {
-            sd_cmd(CMD_READ_SINGLE,(lba+c)*512);
-            if(sd_err) return 0;
+        if(sd_err) { 
+            return 0;
         }
-        if((r=sd_int(INT_READ_RDY))){uart_send_string("\rERROR: Timeout waiting for ready to read\n");sd_err=r;return 0;}
-        for(d=0;d<128;d++) buf[d] = *EMMC_DATA;
-        c++; buf+=128;
+    } else {
+
+        *EMMC_BLKSIZECNT = (1 << 16) | 512;
+
     }
-    if( num > 1 && !(sd_scr[0] & SCR_SUPP_SET_BLKCNT) && (sd_scr[0] & SCR_SUPP_CCS)) sd_cmd(CMD_STOP_TRANS,0);
-    return sd_err!=SD_OK || c!=num? 0 : num*512;
+
+    while( c < num ) {
+
+        if(!(sd_scr[0] & SCR_SUPP_CCS)) {
+
+            sd_cmd(CMD_READ_SINGLE,(lba+c)*512);
+
+            if(sd_err) {
+                return 0;
+            }
+        }
+
+        if((r = sd_int(INT_READ_RDY))) {
+            uart_send_string("\rERROR: Timeout waiting for ready to read\n");
+            sd_err=r;
+            return 0;
+        }
+
+        for(d = 0; d < 128; d++) { 
+            buf[d] = *EMMC_DATA;
+            c++; buf += 128;
+        }
+    }
+
+    if(num > 1 && !(sd_scr[0] & SCR_SUPP_SET_BLKCNT) && (sd_scr[0] & SCR_SUPP_CCS)) {
+        sd_cmd(CMD_STOP_TRANS,0);
+    }
+
+    return sd_err != SD_OK || c != num ? 0 : num * 512;
 }
 
 /**

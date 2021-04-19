@@ -115,7 +115,7 @@ int get_filename(char* name_buffer, char* ext_buffer, char* path) {
 int fat_init() {
     int ret = 1;
 
-    sd_readblock(0, (unsigned char*) bootSector, SECTOR_SIZE);
+    sd_readblock(0, (unsigned char*) bootSector, 1);
     bs = (struct boot_sector*) bootSector;
 
     if (bs->boot_signature != 0xaa55) {

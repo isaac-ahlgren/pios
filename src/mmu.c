@@ -104,9 +104,11 @@ int loadPageTable(struct table_descriptor_stage1 *L1table) {
 
 void mmu_on() {
     
-    mapPages(0,0);            //Map kernel space
-    mapPages(PBASE+0x00300000,PBASE+0x00300000); //Map SD card addresses at least
-    loadPageTable(L1table); //Load L1 table address into lower address page table reg and start mmu
+    mapPages(0,0);                               // map kernel space
+    mapPages(PBASE+0x00300000,PBASE+0x00300000); // map SD card addresses
+    mapPages(PBASE+0x215000,PBASE+0x215000);     // map aux addresses
+    mapPages(PBASE+0x200000,PBASE+0x200000);     // map gpio addresses
+    loadPageTable(L1table);                      // load L1 table address into lower address page table reg and start mmu
     
 }
 
