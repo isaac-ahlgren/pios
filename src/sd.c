@@ -147,8 +147,9 @@ int sd_readblock(unsigned int lba, unsigned char *buffer, unsigned int num)
 
         for(d = 0; d < 128; d++) { 
             buf[d] = *EMMC_DATA;
-            c++; buf += 128;
         }
+        c++; buf += 128;
+        
     }
 
     if(num > 1 && !(sd_scr[0] & SCR_SUPP_SET_BLKCNT) && (sd_scr[0] & SCR_SUPP_CCS)) {

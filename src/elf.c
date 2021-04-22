@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stdint.h>
 #include "clib.h"
 #include "elf.h"
 #include "page.h"
@@ -55,8 +56,8 @@ bool check_elf_magic(unsigned char* e_ident) {
         return false;
     }
     
-    return e_ident[EI_MAG0] != 0x7F && e_ident[EI_MAG1] != 'E'  &&
-           e_ident[EI_MAG2] != 'L'  && e_ident[EI_MAG3] != 'F';
+    return e_ident[EI_MAG0] == 0x7F && e_ident[EI_MAG1] == 'E'  &&
+           e_ident[EI_MAG2] == 'L'  && e_ident[EI_MAG3] == 'F';
 }
 
 bool check_elf64_hdr(Elf64_Ehdr* hdr) {
@@ -73,7 +74,7 @@ bool check_elf64_hdr(Elf64_Ehdr* hdr) {
 	return false;
     }
     
-    if (hdr->e_ident[EI_OSABI] != ELFOSABI_STANDALONE) {
+    if (hdr->e_ident[EI_OSABI] != ELFOSABI_SYSV) {
 	return false;
     }
 
@@ -236,9 +237,37 @@ bool exec(char* path, char* argv[]) {
         return false;
     }
 
-    //TODO: allocate stack frame or figure out if ELF defines a stack header
-    
-    //TODO: use eret instruction to jump to program
+    // allocate stack space
+    struct ppage* stack = allocate_physical_pages(1);
+
+    // check if page was allocated
+    if (!stack) {
+        free_physical_pages(pages_used);
+        return false;
+    }
+
+    // add to list of used pages
+    list_add((List_Element*) stack, (List_Element**) &pages_used);
+
+    // map pages for mmu
+    mapPages(stack->physical_addr, stack->physical_addr);
+
+    // stack pointer starts from high addresses then goes lower
+    // stack pointer is aligned on the 16 byte boundary
+    uint64_t stack_pointer = (uint64_t) ((stack->physical_addr + PAGE_SIZE - 1) & ~15LL);
+
+    uint64_t entry_point   = (uint64_t) elf_header.e_entry;
+
+    uint64_t program_status = 0x3c0;
+ 
+    // set up registers for context switch
+    asm volatile ("msr sp_el0, %0" : : "r" (stack_pointer));
+
+    asm volatile ("msr elr_el1, %0" : : "r" (entry_point));
+
+    asm volatile ("msr spsr_el1, %0" : : "r" (program_status));
+
+    asm volatile ("eret");
     
     return true;
     

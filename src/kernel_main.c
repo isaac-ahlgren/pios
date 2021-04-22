@@ -8,6 +8,7 @@
 #include "sd.h"
 #include "elf.h"
 #include "common.h"
+#include "page.h"
 
 void bss_clear() {
     long * start = &__bss_start;
@@ -19,7 +20,8 @@ void bss_clear() {
     }
 }
 
-void kernel_main() {    	
+void kernel_main() {
+    init_pfa_list();    	
     miniuart_init();
     sd_init();
     mmu_on();

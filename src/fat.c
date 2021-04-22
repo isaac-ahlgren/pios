@@ -178,26 +178,27 @@ int file_open(FILE* f, char* path) {
 	        continue;
 	        
 	    // check if file names are the same
-	    if (file_strcmp(dir_buffer->file_name, name_buffer, 8) && 
-	        file_strcmp(dir_buffer->file_extension, ext_buffer, 3)) 
-	    {   
+	    if (file_strcmp(dir_buffer->file_name, name_buffer, 8)) {
+ 
+	        if (file_strcmp(dir_buffer->file_extension, ext_buffer, 3)) 
+	        {   
 	        	
-	        /* 
-	    	    if supposed to be file but is directory or if supposed to 
-	            be directory but is a file 
-	        */ 
-	        if ((*path == '\0' && (dir_buffer->attribute & (1 << 4))) ||
-	            (*path == '/' && !(dir_buffer->attribute & (1 << 4)))) 
-	        {
-	            wrong_file_type = 1;
+	            /* 
+	    	        if supposed to be file but is directory or if supposed to 
+	                be directory but is a file 
+	            */ 
+	            if ((*path == '\0' && (dir_buffer->attribute & (1 << 4))) ||
+	                (*path == '/' && !(dir_buffer->attribute & (1 << 4)))) 
+	            {
+	                wrong_file_type = 1;
+	                break;
+    		    }
+	        }
+	            sector = ((dir_buffer->cluster - 2) * bs->num_sectors_per_cluster) + first_data_sector;
 	            break;
-    		}
-	       
-	        sector = ((dir_buffer->cluster - 2) * bs->num_sectors_per_cluster) + first_data_sector;
-	        break;
 	        
 	    }
-        }
+        } 
 	    
 	// error: no matching entry was found in directory
 	if (wrong_file_type || *dir_buffer->file_name == 0) {

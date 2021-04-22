@@ -57,7 +57,8 @@ typedef struct {
 #define ELFDATA2MSB    2
 
 // ABI identifiers
-#define ELFOSABI_STANDALONE 255 
+#define ELFOSABI_STANDALONE 255
+#define ELFOSABI_SYSV  0 
                                      
 // ELF types
 #define ET_NONE        0

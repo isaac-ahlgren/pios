@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include "common.h"
 #include "page.h"
 #include "list.h"
@@ -8,10 +9,10 @@ struct ppage* free_pages = 0;
 void init_pfa_list(void) {
     
     struct ppage** free = &free_pages;
-    unsigned long addr = (unsigned long) (((unsigned long) &__end) & ~(PAGE_SIZE - 1)) + PAGE_SIZE;
+    uint64_t addr = (uint64_t) (((uint64_t) &__end) & ~(PAGE_SIZE - 1)) + PAGE_SIZE;
 
     for (int i = 0; i < 128; i++) {
-	physical_page_array[i].physical_addr = (void*) addr;
+	physical_page_array[i].physical_addr = (uint64_t) addr;
         list_add((struct list_element*) &physical_page_array[i], (struct list_element**)free);
 	addr += PAGE_SIZE;
     }	
