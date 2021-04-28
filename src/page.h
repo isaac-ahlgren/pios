@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define PAGE_SIZE 0x200000
+#define PAGE_SIZE 0x1000
 
 struct ppage {
     struct ppage *next;

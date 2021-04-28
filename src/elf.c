@@ -7,49 +7,6 @@
 #include "list.h"
 #include "mmu.h"
 
-
-/*
-int parse_elf_header(void *start) {
-    int k;
-    struct elf32_header *hdr = start;
-    struct elf_program_header *prog_hdr = start+hdr->e_phoff;
-
-    printk("Magic number   = %08x\n", hdr->magic);
-    printk("ELF Class      = %02x (%s)\n", hdr->elfclass, hdr->elfclass == 1 ? "32 Bit" : "64 Bit");
-    printk("Endianness     = %02x (%s)\n", hdr->endianness, hdr->endianness == 1 ? "Little" : "Big");
-    printk("ELF Version    = %02x\n", hdr->elfversion);
-    printk("OS ABI         = %02x\n", hdr->osabi);
-    printk("OS ABI Version = %02x\n", hdr->osabiversion);
-    printk("Obj File Type  = %04x\n", hdr->e_type);
-    printk("Architecture   = %04x\n", hdr->e_machine);
-    printk("Version        = %08x\n", hdr->e_version);
-    printk("Entry Point    = %08x\n", hdr->e_entry);
-
-    // Look thru the program header...
-    for(k = 0; k < hdr->e_phnum; k++) {
-        printk("\n--- Program Header %d ---\n", k);
-        printk("Segment type = %08x\n", prog_hdr->type);
-        printk("Offset       = %08x\n", prog_hdr->offset);
-        printk("Virt Addr    = %08x\n", prog_hdr->vaddr);
-        printk("Phys Addr    = %08x\n", prog_hdr->paddr);
-        printk("Size in file = %08x\n", prog_hdr->filesz);
-        printk("Size in mem  = %08x\n", prog_hdr->memsz);
-        printk("Flags        = %08x\n", prog_hdr->flags);
-        printk("Alignment    = %08x\n", prog_hdr->align);
-        prog_hdr++;
-    }
-
-    if(hdr->magic != 0x464c457f) { // Check for valid magic number in ELF header
-        return -1;
-    }
-    if(hdr->e_machine != 3) { // Check for correct machine type (3 indicates x86)
-        return -2;
-    }
-
-    return 0;
-}
-*/
-
 bool check_elf_magic(unsigned char* e_ident) {
 
     if (!e_ident) {
@@ -85,7 +42,7 @@ bool check_elf64_hdr(Elf64_Ehdr* hdr) {
     return true;
 }       
 
-
+/*
 // I DONT THING I NEED THIS
 bool elf_load_allocated(Elf64_Ehdr* hdr, FILE* exec, struct ppage** pages) {
 
@@ -145,7 +102,7 @@ bool elf_load_allocated(Elf64_Ehdr* hdr, FILE* exec, struct ppage** pages) {
     return true;
 }    
 
-
+*/
 
 bool elf_load_segments(Elf64_Ehdr*hdr, FILE* exec, struct ppage** pages) {
 
@@ -188,7 +145,7 @@ bool elf_load_segments(Elf64_Ehdr*hdr, FILE* exec, struct ppage** pages) {
 	        list_add((List_Element*) new_page, (List_Element**) pages);
                 
 		// map pages for mmu
-	        mapPages(vaddr, new_page->physical_addr);
+	        map_pages(vaddr, (void*)new_page->physical_addr);
 
                 // read needed bytes into page
                 unsigned int bytes_needed = (i*PAGE_SIZE - prog_hdr->p_filesz > 0) ? PAGE_SIZE % prog_hdr->p_filesz : PAGE_SIZE;
@@ -227,11 +184,13 @@ bool exec(char* path, char* argv[]) {
 	return false;
     }
 
+    /*
     // load sections that need allocation
     if (!elf_load_allocated(&elf_header, &exec, &pages_used)) {
         free_physical_pages(pages_used);
 	return false;
     }
+    */
     
     // load segments
     if (!elf_load_segments(&elf_header, &exec, &pages_used)) {
@@ -252,7 +211,7 @@ bool exec(char* path, char* argv[]) {
     list_add((List_Element*) stack, (List_Element**) &pages_used);
 
     // map pages for mmu
-    mapPages(stack->physical_addr, stack->physical_addr);
+    map_pages(stack->physical_addr, stack->physical_addr);
 
     // stack pointer starts from high addresses then goes lower
     // stack pointer is aligned on the 16 byte boundary

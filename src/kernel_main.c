@@ -24,7 +24,7 @@ void kernel_main() {
     init_pfa_list();    	
     miniuart_init();
     sd_init();
-    mmu_on();
+    mmu_init();
     fat_init();
     
     exec("/bin/a.out", 0);
