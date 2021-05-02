@@ -42,8 +42,6 @@ struct page_descriptor_stage1 {
 */
 typedef struct {
     struct table_descriptor_stage1* L1_table;      
-    struct table_descriptor_stage1* L2_table_list; 
-    struct page_descriptor_stage1* L3_table_list; 
     struct ppage* used_pages; // list of pages being used for tables
 } mmu_t;
 

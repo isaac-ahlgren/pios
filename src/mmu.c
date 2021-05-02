@@ -1,5 +1,4 @@
 
-
 #include "pbase.h"
 #include "page.h"
 #include "common.h"
@@ -21,56 +20,69 @@
 mmu_t current_pagetable;
 
 // only supports 4k page mapping at the moment
-void map_pages(void *vaddr, void *paddr) {
+void map_pages(void *vaddr, void *paddr, mmu_t* page_table) { 
 
-    struct table_descriptor_stage1* L1_table = current_pagetable.L1_table;
-    struct table_descriptor_stage1* L2_table = current_pagetable.L2_table_list;
-    struct page_descriptor_stage1*  L3_table = current_pagetable.L3_table_list; 
+    struct ppage* page = 0;
+    struct table_descriptor_stage1* L1_table = page_table->L1_table;
+    struct table_descriptor_stage1* L2_table = 0;
+    struct table_descriptor_stage1* L3_table = 0;
 
     unsigned long int L3_index = ((unsigned long int) vaddr >> 12) & 0x1ff;
     unsigned long int L2_index = ((unsigned long int) vaddr >> 21) & 0x1ff;
     unsigned long int L1_index = ((unsigned long int) vaddr >> 30) & 0x1ff;
 
-    // place in L1 table
-    L1_table[L1_index].valid = 1;
-    L1_table[L1_index].type = 1;
-    L1_table[L1_index].next_lvl_table = ((unsigned long int)L2_table) >> 12;
 
-    // place in L2 table
-    L2_table[L2_index].valid = 1;
-    L2_table[L2_index].type = 1;
-    L2_table[L2_index].next_lvl_table = ((unsigned long int)L3_table) >> 12;
+    // if L2 table not created, create one
+    if (L1_table[L1_index].valid == 0) {
     
-    // place in L3 table
-    L3_table[L3_index].valid = 1;
-    L3_table[L3_index].attrindx = 0;
-    L3_table[L3_index].type = 1;
-    L3_table[L3_index].sh = 3;
-    L3_table[L3_index].ap = 0;
-    L3_table[L3_index].af = 1;
-    L3_table[L3_index].addr = (unsigned long int) paddr >> 12;
-    
+        L1_table[L1_index].valid = 1;
+        L1_table[L1_index].type = 1;
+
+        page = allocate_physical_pages(1);
+        list_add((List_Element*)page, (List_Element**)&page_table->used_pages);
+        L1_table[L1_index].next_lvl_table = ((unsigned long int) page->physical_addr) >> 12;
+    }
+
+    L2_table = (struct table_descriptor_stage1*) L1_table[L1_index].next_lvl_table << 12;
+
+    // if L3 table not created, create one
+    if (L2_table[L2_index].valid == 0) {
+
+        L2_table[L2_index].valid = 1;
+        L2_table[L2_index].type  = 1;
+        
+        page = allocate_physical_pages(1);
+        list_add((List_Element*)page, (List_Element**)&page_table->used_pages);
+        L2_table[L2_index].next_lvl_table = ((unsigned long int) page->physical_addr >> 12;
+    }
+
+    L3_table = (struct table_descriptor_stage1*) L2_table[L2_index].next_lvl_table << 12;
+
+    // input page address
+    if (L3_table[L3_index].valid == 0) {    
+        L3_table[L3_index].valid = 1;
+        L3_table[L3_index].attrindx = 0;
+        L3_table[L3_index].type = 1;
+        L3_table[L3_index].sh = 3;
+        L3_table[L3_index].ap = 0;
+        L3_table[L3_index].af = 1;
+        L3_table[L3_index].addr = (unsigned long int) paddr >> 12;
+    }
 }
 
 void mmu_init() {
 
     // initialize page table
-    struct ppage* pages = allocate_physical_pages(3); // possible liability if not identity mapped
-    current_pagetable.used_pages = pages;
-    current_pagetable.L1_table = (struct table_descriptor_stage1*) pages->physical_addr;
-    pages = pages->next;
-    current_pagetable.L2_table_list = (struct table_descriptor_stage1*) pages->physical_addr;
-    pages = pages->next;
-    current_pagetable.L3_table_list = (struct page_descriptor_stage1*) pages->physical_addr;
+    
     
     // identity map kernel code
     for (unsigned long int addr = 0x0; addr < &__end; addr += PAGE_SIZE) {
          map_pages((void*)addr, (void*)addr);
     }
 
-   // mapPages(PBASE+0x00300000,PBASE+0x00300000); // map SD card addresses
-   // mapPages(PBASE+0x215000,PBASE+0x215000);     // map aux addresses
-   // mapPages(PBASE+0x200000,PBASE+0x200000);     // map gpio addresses
+   map_pages(PBASE+0x00300000,PBASE+0x00300000); // map SD card addresses
+   map_pages(PBASE+0x215000,PBASE+0x215000);     // map aux addresses
+   map_pages(PBASE+0x200000,PBASE+0x200000);     // map gpio addresses
     
     // set page table, control registers, and start mmu
 

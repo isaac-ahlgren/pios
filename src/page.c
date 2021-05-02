@@ -3,7 +3,7 @@
 #include "page.h"
 #include "list.h"
 
-struct ppage physical_page_array[128];
+struct ppage physical_page_array[1024];
 struct ppage* free_pages = 0;
 
 void init_pfa_list(void) {

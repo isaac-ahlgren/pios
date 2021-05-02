@@ -54,11 +54,11 @@ clean:
 	killall screen
 
 debug:
-	screen -S qemu-x86_64 -d -m ./qemu-system-aarch64 -machine raspi3 -kernel kernel8.img -hda rootfs.img -S -s -serial null -serial stdio -monitor none -nographic -k en-us 
+	screen -S qemu-x86_64 -d -m qemu-system-aarch64 -machine raspi3 -kernel kernel8.img -hda rootfs.img -S -s -serial null -serial stdio -monitor none -nographic -k en-us 
 	TERM=xterm aarch64-none-elf-gdb -x gdb_init_prot_mode.txt
 
 run:
-	./qemu-system-aarch64 -machine raspi3 -kernel kernel8.img -hda rootfs.img -serial null -serial stdio -monitor none -nographic -k en-us
+	qemu-system-aarch64 -machine raspi3 -kernel kernel8.img -hda rootfs.img -serial null -serial stdio -monitor none -nographic -k en-us
 
 disassemble:
 	$(OBJDUMP) -d kernel8.elf

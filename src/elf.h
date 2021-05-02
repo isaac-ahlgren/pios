@@ -104,6 +104,7 @@ typedef struct {
     Elf64_Word    p_flags;   // segment atributes
     Elf64_Off     p_offset;  // offset in file
     Elf64_Addr    p_vaddr;   // virtual address
+    Elf64_Addr    p_paddr;   // physical address
     Elf64_Xword   p_filesz;  // size of segment in file
     Elf64_Xword   p_memsz;   // size of segment in memory
     Elf64_Xword   p_align;   // alignment of segment
