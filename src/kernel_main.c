@@ -6,7 +6,7 @@
 #include "mmu.h"
 #include "fat.h"
 #include "sd.h"
-//#include "elf.h"
+#include "elf.h"
 #include "common.h"
 #include "page.h"
 
@@ -27,7 +27,7 @@ void kernel_main() {
     mmu_init();
     fat_init();
     
-//    exec("/bin/a.out", 0);
+    exec("/bin/a.out", 0);
 
     while(1){
 

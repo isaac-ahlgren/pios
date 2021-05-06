@@ -145,7 +145,7 @@ bool elf_load_segments(Elf64_Ehdr*hdr, FILE* exec, struct ppage** pages) {
 	        list_add((List_Element*) new_page, (List_Element**) pages);
                 
 		// map pages for mmu
-	        map_pages(vaddr, (void*)new_page->physical_addr);
+	        kmap(vaddr, (void*)new_page->physical_addr);
 
                 // read needed bytes into page
                 unsigned int bytes_needed = (i*PAGE_SIZE - prog_hdr->p_filesz > 0) ? PAGE_SIZE % prog_hdr->p_filesz : PAGE_SIZE;

@@ -48,8 +48,10 @@ typedef struct {
 static void no_mmu_kmap(void*, void*, struct table_descriptor_stage1*);
 static void set_recursive_entry(void*, void*);
 static void* init_kernel_ptable();
+static void* init_kernel_table();
 
 void mmu_init();
+void kmap(void*, void*);
 
 #endif
 
