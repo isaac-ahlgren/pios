@@ -45,7 +45,10 @@ typedef struct {
     struct ppage* used_pages; // list of pages being used for tables
 } mmu_t;
 
-void map_pages(void *vaddr, void *paddr);
+static void no_mmu_kmap(void*, void*, struct table_descriptor_stage1*);
+static void set_recursive_entry(void*, void*);
+static void* init_kernel_ptable();
+
 void mmu_init();
 
 #endif

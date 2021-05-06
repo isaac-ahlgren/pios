@@ -1,4 +1,7 @@
-
+#include <stdint.h>
+#include "gpio.h"
+#include "aux.h"
+#include "sd.h"
 #include "pbase.h"
 #include "page.h"
 #include "common.h"
@@ -17,49 +20,45 @@
 
 */
 
-mmu_t current_pagetable;
+mmu_t current_page_table;
 
-// only supports 4k page mapping at the moment
-void map_pages(void *vaddr, void *paddr, mmu_t* page_table) { 
+static void no_mmu_kmap(void* vaddr, void* paddr, struct table_descriptor_stage1* L1_table) {
 
-    struct ppage* page = 0;
-    struct table_descriptor_stage1* L1_table = page_table->L1_table;
-    struct table_descriptor_stage1* L2_table = 0;
-    struct table_descriptor_stage1* L3_table = 0;
+    struct table_descriptor_stage1* L2_table;
+    struct page_descriptor_stage1* L3_table;
 
-    unsigned long int L3_index = ((unsigned long int) vaddr >> 12) & 0x1ff;
-    unsigned long int L2_index = ((unsigned long int) vaddr >> 21) & 0x1ff;
+    struct ppage* page;
+
     unsigned long int L1_index = ((unsigned long int) vaddr >> 30) & 0x1ff;
+    unsigned long int L2_index = ((unsigned long int) vaddr >> 21) & 0x1ff;
+    unsigned long int L3_index = ((unsigned long int) vaddr >> 12) & 0x1ff;
 
-
-    // if L2 table not created, create one
     if (L1_table[L1_index].valid == 0) {
-    
+
         L1_table[L1_index].valid = 1;
         L1_table[L1_index].type = 1;
-
+       
         page = allocate_physical_pages(1);
-        list_add((List_Element*)page, (List_Element**)&page_table->used_pages);
+        set_recursive_entry(page->physical_addr, page->physical_addr);
         L1_table[L1_index].next_lvl_table = ((unsigned long int) page->physical_addr) >> 12;
     }
 
-    L2_table = (struct table_descriptor_stage1*) L1_table[L1_index].next_lvl_table << 12;
+    L2_table = (struct table_descriptor_stage1*) (((unsigned long int)L1_table[L1_index].next_lvl_table) << 12);
 
-    // if L3 table not created, create one
     if (L2_table[L2_index].valid == 0) {
 
         L2_table[L2_index].valid = 1;
-        L2_table[L2_index].type  = 1;
+        L2_table[L2_index].type = 1;
         
         page = allocate_physical_pages(1);
-        list_add((List_Element*)page, (List_Element**)&page_table->used_pages);
-        L2_table[L2_index].next_lvl_table = ((unsigned long int) page->physical_addr >> 12;
+        set_recursive_entry(page->physical_addr, page->physical_addr);
+        L2_table[L2_index].next_lvl_table = ((unsigned long int) page->physical_addr) >> 12;
     }
 
-    L3_table = (struct table_descriptor_stage1*) L2_table[L2_index].next_lvl_table << 12;
+    L3_table = (struct page_descriptor_stage1*) (((unsigned long int)L2_table[L2_index].next_lvl_table) << 12);
 
-    // input page address
-    if (L3_table[L3_index].valid == 0) {    
+    if (L3_table[L3_index].valid == 0) {
+
         L3_table[L3_index].valid = 1;
         L3_table[L3_index].attrindx = 0;
         L3_table[L3_index].type = 1;
@@ -68,22 +67,52 @@ void map_pages(void *vaddr, void *paddr, mmu_t* page_table) {
         L3_table[L3_index].af = 1;
         L3_table[L3_index].addr = (unsigned long int) paddr >> 12;
     }
+        
+}
+
+static void set_recursive_entry(void* vaddr, void* paddr) {
+
+    struct page_descriptor_stage1* table = vaddr;
+
+    table[511].valid = 1;
+    table[511].attrindx = 0;
+    table[511].type = 1;
+    table[511].sh = 3;
+    table[511].ap = 0;
+    table[511].af = 1;
+    table[511].addr = (unsigned long int) paddr >> 12;
+
+}
+
+static void* init_kernel_ptable() {
+
+    struct table_descriptor_stage1* L1_table;
+    struct ppage* page = allocate_physical_pages(1);
+    L1_table = (struct table_descriptor_stage1*) page->physical_addr;
+    set_recursive_entry(L1_table, L1_table);
+
+    /* map mount address */
+    void* mount = (void*) (((uint64_t)510 << 30) | ((uint64_t)510 << 21) | ((uint64_t)510 << 12));
+    no_mmu_kmap(mount, mount, L1_table);
+
+    /* map IO devices */
+    no_mmu_kmap(GPIOBASE, GPIOBASE, L1_table);
+    no_mmu_kmap(EMMC_ARG2, EMMC_ARG2, L1_table);
+    no_mmu_kmap(AUX_BASE, AUX_BASE, L1_table);
+
+    /* map kernel space */
+    for (uint64_t addr = 0x0; addr < &__end; addr += PAGE_SIZE) {
+        no_mmu_kmap(addr, addr, L1_table);
+    }
+
+    return (void*) L1_table;
 }
 
 void mmu_init() {
 
     // initialize page table
-    
-    
-    // identity map kernel code
-    for (unsigned long int addr = 0x0; addr < &__end; addr += PAGE_SIZE) {
-         map_pages((void*)addr, (void*)addr);
-    }
-
-   map_pages(PBASE+0x00300000,PBASE+0x00300000); // map SD card addresses
-   map_pages(PBASE+0x215000,PBASE+0x215000);     // map aux addresses
-   map_pages(PBASE+0x200000,PBASE+0x200000);     // map gpio addresses
-    
+    struct table_descriptor_stage1* L1_table = init_kernel_ptable();
+   
     // set page table, control registers, and start mmu
 
     unsigned long b, r;
@@ -119,7 +148,7 @@ void mmu_init() {
 
     // tell the MMU where our translation tables are. TTBR_CNP bit not documented, but required
     // lower half, user space
-    asm volatile ("msr ttbr0_el1, %0" : : "r" ((unsigned long) current_pagetable.L1_table));
+    asm volatile ("msr ttbr0_el1, %0" : : "r" ((unsigned long) L1_table));
 
     // finally, toggle some bits in system control register to enable page translation
     asm volatile ("dsb ish; isb; mrs %0, sctlr_el1" : "=r" (r));
@@ -136,7 +165,8 @@ void mmu_init() {
     r|=  (1<<0);     // set M, enable MMU
 
     asm volatile ("msr sctlr_el1, %0; isb" : : "r" (r));
-        
+    
+    current_page_table.L1_table = L1_table;
 }
 
 

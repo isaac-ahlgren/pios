@@ -22,7 +22,6 @@ OBJS = \
 	sd.o \
 	delay.o \
 	fat.o \
-	elf.o \
         clib.o \
 	page.o \
 
