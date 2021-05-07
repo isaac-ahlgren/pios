@@ -148,7 +148,7 @@ bool elf_load_segments(Elf64_Ehdr*hdr, FILE* exec, struct ppage** pages) {
 	        kmap(vaddr, (void*)new_page->physical_addr);
 
                 // read needed bytes into page
-                unsigned int bytes_needed = (i*PAGE_SIZE - prog_hdr->p_filesz > 0) ? PAGE_SIZE % prog_hdr->p_filesz : PAGE_SIZE;
+                unsigned int bytes_needed = (i*PAGE_SIZE > prog_hdr->p_filesz) ? prog_hdr->p_filesz % PAGE_SIZE : PAGE_SIZE;
 	        read_file(exec, (unsigned char*) vaddr, bytes_needed);
                 
 		// next vaddr for next page
@@ -218,17 +218,21 @@ bool exec(char* path, char* argv[]) {
     uint64_t stack_pointer = (uint64_t) ((stack->physical_addr + PAGE_SIZE - 1) & ~15LL);
 
     uint64_t entry_point   = (uint64_t) elf_header.e_entry;
-
+    
     uint64_t program_status = 0x3c0;
- 
+
+//    asm volatile ("br %0" : : "r" (entry_point)); 
+
     // set up registers for context switch
-    asm volatile ("msr sp_el0, %0" : : "r" (stack_pointer));
+//    asm volatile ("msr sp_el0, %0" : : "r" (stack_pointer));
 
     asm volatile ("msr elr_el1, %0" : : "r" (entry_point));
 
     asm volatile ("msr spsr_el1, %0" : : "r" (program_status));
 
-    asm volatile ("eret");
+    asm volatile ("br %0" : : "r" (entry_point));
+
+//    asm volatile ("eret");
     
     return true;
     
