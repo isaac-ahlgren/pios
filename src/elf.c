@@ -211,7 +211,7 @@ bool exec(char* path, char* argv[]) {
     list_add((List_Element*) stack, (List_Element**) &pages_used);
 
     // map pages for mmu
-    map_pages(stack->physical_addr, stack->physical_addr);
+    kmap(stack->physical_addr, stack->physical_addr);
 
     // stack pointer starts from high addresses then goes lower
     // stack pointer is aligned on the 16 byte boundary

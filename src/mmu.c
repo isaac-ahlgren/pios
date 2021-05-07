@@ -4,6 +4,7 @@
 #include "sd.h"
 #include "pbase.h"
 #include "page.h"
+#include "list.h"
 #include "common.h"
 #include "mmu.h"
 
@@ -22,7 +23,18 @@
 
 mmu_t current_page_table;
 
-#define GET_TABLE_ADDRESS(x,y,z) (((uint64)x << 30) | ((uint64_t)y << 21) | ((uint64_t)z << 12))
+static void no_mmu_kmap(void*, void*, struct table_descriptor_stage1*);
+static void set_recursive_entry(void*, void*);
+static void* init_kernel_ptable();
+static void* init_kernel_table();
+
+
+
+
+
+
+
+#define GET_TABLE_ADDRESS(x,y,z) (((uint64_t)x << 30) | ((uint64_t)y << 21) | ((uint64_t)z << 12))
 
 void kmap(void* vaddr, void* paddr) {
 
@@ -32,7 +44,7 @@ void kmap(void* vaddr, void* paddr) {
 
     struct table_descriptor_stage1* L1_table = (struct table_descriptor_stage1*) GET_TABLE_ADDRESS(511, 511, 511);
     struct table_descriptor_stage1* L2_table = (struct table_descriptor_stage1*) GET_TABLE_ADDRESS(L1_index, 511, 511);
-    struct table_descriptor_stage1* L3_table = (struct table_descriptor_stage18) GET_TABLE_ADDRESS(L1_index, L2_index, 511);
+    struct page_descriptor_stage1* L3_table = (struct page_descriptor_stage1*) GET_TABLE_ADDRESS(L1_index, L2_index, 511);
 
     if (L1_table[L1_index].valid == 0) {
 
@@ -125,15 +137,13 @@ void mmu_init() {
     current_page_table.L1_table = L1_table;
 }
 
-
-
 static void* init_kernel_table() {
 
     struct ppage* page = allocate_physical_pages(1);
-    list_add(((List_Element*)page, (List_Element**)&current_page_table.used_pages);
+    list_add((List_Element*)page, (List_Element**)&current_page_table.used_pages);
 
 
-    struct page_descriptor_stage1* mount_table = (((uint64_t)510 << 30) | ((uint64_t)510 << 21) | ((uint64_t)511 << 12);
+    struct page_descriptor_stage1* mount_table = (((uint64_t)510 << 30) | ((uint64_t)510 << 21) | ((uint64_t)511 << 12));
     void* mount = (struct page_descriptor_stage1*) (((uint64_t)510 << 30) | ((uint64_t)510 << 21) | ((uint64_t)510 << 12));
     void* table = page->physical_addr;
     
