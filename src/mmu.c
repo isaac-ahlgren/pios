@@ -137,9 +137,9 @@ static void* init_kernel_table() {
     list_add((List_Element*)page, (List_Element**)&current_page_table.used_pages);
 
 
-    struct page_descriptor_stage1* mount_table = (((uint64_t)510 << 30) | ((uint64_t)510 << 21) | ((uint64_t)511 << 12));
+    struct page_descriptor_stage1* mount_table = (struct page_descriptor_stage1*) (((uint64_t)510 << 30) | ((uint64_t)510 << 21) | ((uint64_t)511 << 12));
     void* mount = (struct page_descriptor_stage1*) (((uint64_t)510 << 30) | ((uint64_t)510 << 21) | ((uint64_t)510 << 12));
-    void* table = page->physical_addr;
+    void* table = (void*) page->physical_addr;
     
     mount_table[510].addr = (unsigned long int) table >> 12;
 
@@ -165,7 +165,7 @@ static void no_mmu_kmap(void* vaddr, void* paddr, struct table_descriptor_stage1
         L1_table[L1_index].type = 1;
        
         page = allocate_physical_pages(1);
-        set_recursive_entry(page->physical_addr, page->physical_addr);
+        set_recursive_entry((void*)page->physical_addr, (void*)page->physical_addr);
         L1_table[L1_index].next_lvl_table = ((unsigned long int) page->physical_addr) >> 12;
     }
 
@@ -177,7 +177,7 @@ static void no_mmu_kmap(void* vaddr, void* paddr, struct table_descriptor_stage1
         L2_table[L2_index].type = 1;
         
         page = allocate_physical_pages(1);
-        set_recursive_entry(page->physical_addr, page->physical_addr);
+        set_recursive_entry((void*)page->physical_addr, (void*)page->physical_addr);
         L2_table[L2_index].next_lvl_table = ((unsigned long int) page->physical_addr) >> 12;
     }
 
@@ -222,12 +222,12 @@ static void* init_kernel_ptable() {
     no_mmu_kmap(mount, mount, L1_table);
 
     /* map IO devices */
-    no_mmu_kmap(GPIOBASE, GPIOBASE, L1_table);
-    no_mmu_kmap(EMMC_ARG2, EMMC_ARG2, L1_table);
-    no_mmu_kmap(AUX_BASE, AUX_BASE, L1_table);
+    no_mmu_kmap((void*)GPIOBASE, (void*)GPIOBASE, L1_table);
+    no_mmu_kmap((void*)EMMC_ARG2, (void*)EMMC_ARG2, L1_table);
+    no_mmu_kmap((void*)AUX_BASE, (void*)AUX_BASE, L1_table);
 
     /* map kernel space */
-    for (uint64_t addr = 0x0; addr < &__end; addr += PAGE_SIZE) {
+    for (void* addr = 0x0; addr < (void*)&__end; addr += PAGE_SIZE) {
         no_mmu_kmap(addr, addr, L1_table);
     }
 

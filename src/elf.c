@@ -141,15 +141,15 @@ bool exec(char* path, char* argv[]) {
     list_add((List_Element*) stack, (List_Element**) &pages_used);
 
     // map pages for mmu
-    kmap(stack->physical_addr, stack->physical_addr);
+    kmap((void*)stack->physical_addr, (void*)stack->physical_addr);
 
     // stack pointer starts from high addresses then goes lower
     // stack pointer is aligned on the 16 byte boundary
-    uint64_t stack_pointer = (uint64_t) ((stack->physical_addr + PAGE_SIZE - 1) & ~15LL);
+//    uint64_t stack_pointer = (uint64_t) ((stack->physical_addr + PAGE_SIZE - 1) & ~15LL);
 
     uint64_t entry_point   = (uint64_t) elf_header.e_entry;
     
-    uint64_t program_status = 0x3c0;
+//    uint64_t program_status = 0x3c0;
 
     // EL issue, don't fully understand how aarch64 works with EL for this
 
