@@ -42,68 +42,6 @@ bool check_elf64_hdr(Elf64_Ehdr* hdr) {
     return true;
 }       
 
-/*
-// I DONT THING I NEED THIS
-bool elf_load_allocated(Elf64_Ehdr* hdr, FILE* exec, struct ppage** pages) {
-
-    Elf64_Shdr shdr[10]; // temporary buffer for section headers
-    
-    // change offset to place in file with section headers
-    set_offset(exec, hdr->e_shoff);
-    
-    for (int i = 0; i < hdr->e_shnum; i++) {
-    
-        // if section header buffer empty or all read, read more
-        if (!(i % 10)) {
-            read_file(exec, (unsigned char*) shdr, sizeof(Elf64_Shdr) * 10);
-        }    
-        
-        Elf64_Shdr* section = &shdr[i];
-        
-	// if the section is not present in the file
-        if (section->sh_type == SHT_NOBITS) {
-            
-	    // skip if empty
-	    if (!section->sh_size) {
-	        continue;
-	    }
-
-	    if (section->sh_flags & SHF_ALLOC) {
-             
-		unsigned int pages_needed = section->sh_size / PAGE_SIZE + 1;
-		void* vaddr = (void*) section->sh_addr;
-		struct ppage* new_page = 0;
-
-		// allocate and map necissary pages
-		for (int i = 0; i < pages_needed; i++) {
-
-		    // allocate page
-                    new_page = allocate_physical_pages(1);
-                
-		    // check if page was allocated
-  	            if (!new_page) return false;
-                    
-		    // add page to list of used pages
-	            list_add((List_Element*) new_page, (List_Element**) pages);
-                    
-		    // map page to mmu
-	            mapPages(vaddr, new_page->physical_addr);
-                    
-		    // zero out allocated
-	            memset(vaddr, 0, section->sh_size);
-                    
-		    // next vaddr for next page
-	            vaddr += PAGE_SIZE;
-                }
-            }
-        }	
-    }
-
-    return true;
-}    
-
-*/
-
 bool elf_load_segments(Elf64_Ehdr*hdr, FILE* exec, struct ppage** pages) {
 
     Elf64_Phdr phdr[10]; // temporary buffer for program headers
@@ -183,14 +121,6 @@ bool exec(char* path, char* argv[]) {
     if (!check_elf64_hdr(&elf_header)) {
 	return false;
     }
-
-    /*
-    // load sections that need allocation
-    if (!elf_load_allocated(&elf_header, &exec, &pages_used)) {
-        free_physical_pages(pages_used);
-	return false;
-    }
-    */
     
     // load segments
     if (!elf_load_segments(&elf_header, &exec, &pages_used)) {
@@ -221,14 +151,16 @@ bool exec(char* path, char* argv[]) {
     
     uint64_t program_status = 0x3c0;
 
+    // EL issue, don't fully understand how aarch64 works with EL for this
+
 //    asm volatile ("br %0" : : "r" (entry_point)); 
 
     // set up registers for context switch
 //    asm volatile ("msr sp_el0, %0" : : "r" (stack_pointer));
 
-    asm volatile ("msr elr_el1, %0" : : "r" (entry_point));
+//    asm volatile ("msr elr_el1, %0" : : "r" (entry_point));
 
-    asm volatile ("msr spsr_el1, %0" : : "r" (program_status));
+//    asm volatile ("msr spsr_el1, %0" : : "r" (program_status));
 
     asm volatile ("br %0" : : "r" (entry_point));
 
@@ -237,13 +169,3 @@ bool exec(char* path, char* argv[]) {
     return true;
     
 }        
-        
-
-
-
-
-
-
-
-
-

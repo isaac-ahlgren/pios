@@ -1,6 +1,5 @@
 #include "list.h"
 
-
 /*
  * Inserts element into list before given element
  */

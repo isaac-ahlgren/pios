@@ -21,20 +21,14 @@
 
 */
 
-mmu_t current_page_table;
-
 static void no_mmu_kmap(void*, void*, struct table_descriptor_stage1*);
 static void set_recursive_entry(void*, void*);
 static void* init_kernel_ptable();
 static void* init_kernel_table();
 
-
-
-
-
-
-
 #define GET_TABLE_ADDRESS(x,y,z) (((uint64_t)x << 30) | ((uint64_t)y << 21) | ((uint64_t)z << 12))
+
+mmu_t current_page_table;
 
 void kmap(void* vaddr, void* paddr) {
 

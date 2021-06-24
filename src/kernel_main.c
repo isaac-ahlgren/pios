@@ -26,6 +26,9 @@ void kernel_main() {
     sd_init();
     mmu_init();
     fat_init();
+
+    int* fault = 0x777777;
+    *fault = 0;
     
     exec("/bin/a.out", 0);
 

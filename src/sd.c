@@ -37,7 +37,10 @@ unsigned long sd_scr[2], sd_ocr, sd_rca, sd_err, sd_hv;
  */
 int sd_status(unsigned int mask)
 {
-    int cnt = 1000000; while((*EMMC_STATUS & mask) && !(*EMMC_INTERRUPT & INT_ERROR_MASK) && cnt--) delay_mc(1);
+    int cnt = 1000000; 
+    while((*EMMC_STATUS & mask) && !(*EMMC_INTERRUPT & INT_ERROR_MASK) && cnt--) {
+        delay_mc(1);
+    }
     return (cnt <= 0 || (*EMMC_INTERRUPT & INT_ERROR_MASK)) ? SD_ERROR : SD_OK;
 }
 
@@ -46,12 +49,23 @@ int sd_status(unsigned int mask)
  */
 int sd_int(unsigned int mask)
 {
-    unsigned int r, m=mask | INT_ERROR_MASK;
-    int cnt = 1000000; while(!(*EMMC_INTERRUPT & m) && cnt--) delay_mc(1);
-    r=*EMMC_INTERRUPT;
-    if(cnt<=0 || (r & INT_CMD_TIMEOUT) || (r & INT_DATA_TIMEOUT) ) { *EMMC_INTERRUPT=r; return SD_TIMEOUT; } else
-    if(r & INT_ERROR_MASK) { *EMMC_INTERRUPT=r; return SD_ERROR; }
-    *EMMC_INTERRUPT=mask;
+    unsigned int m = mask | INT_ERROR_MASK;
+
+    int cnt = 1000000; 
+    while(!(*EMMC_INTERRUPT & m) && cnt--) {
+        delay_mc(1);
+    }
+
+    unsigned int r = *EMMC_INTERRUPT;
+    if (cnt<=0 || (r & INT_CMD_TIMEOUT) || (r & INT_DATA_TIMEOUT)) { 
+        *EMMC_INTERRUPT = r; 
+        return SD_TIMEOUT; 
+    } 
+    else if (r & INT_ERROR_MASK) { 
+        *EMMC_INTERRUPT = r; 
+        return SD_ERROR; 
+    }
+    *EMMC_INTERRUPT = mask;
     return 0;
 }
 
@@ -60,32 +74,61 @@ int sd_int(unsigned int mask)
  */
 int sd_cmd(unsigned int code, unsigned int arg)
 {
-    int r=0;
-    sd_err=SD_OK;
-    if(code&CMD_NEED_APP) {
-        r=sd_cmd(CMD_APP_CMD|(sd_rca?CMD_RSPNS_48:0),sd_rca);
-        if(sd_rca && !r) { uart_send_string("ERROR: failed to send SD APP command\n"); sd_err=SD_ERROR;return 0;}
+    int r = 0;
+    sd_err = SD_OK;
+    if (code & CMD_NEED_APP) {
+        r = sd_cmd(CMD_APP_CMD | (sd_rca ? CMD_RSPNS_48:0), sd_rca);
+        if (sd_rca && !r) { 
+            uart_send_string("ERROR: failed to send SD APP command\n"); 
+            sd_err = SD_ERROR;
+            return 0;
+        }
         code &= ~CMD_NEED_APP;
     }
-    if(sd_status(SR_CMD_INHIBIT)) { uart_send_string("ERROR: EMMC busy\n"); sd_err= SD_TIMEOUT;return 0;}
-    uart_send_string("EMMC: Sending command ");/*uart_hex(code);*/uart_send_string(" arg ");/*uart_hex(arg);*/uart_send_string("\n");
-    *EMMC_INTERRUPT=*EMMC_INTERRUPT; *EMMC_ARG1=arg; *EMMC_CMDTM=code;
-    if(code==CMD_SEND_OP_COND) delay_mc(1000); else
-    if(code==CMD_SEND_IF_COND || code==CMD_APP_CMD) delay_mc(100);
-    if((r=sd_int(INT_CMD_DONE))) {uart_send_string("ERROR: failed to send EMMC command\n");sd_err=r;return 0;}
-    r=*EMMC_RESP0;
-    if(code==CMD_GO_IDLE || code==CMD_APP_CMD) return 0; else
-    if(code==(CMD_APP_CMD|CMD_RSPNS_48)) return r&SR_APP_CMD; else
-    if(code==CMD_SEND_OP_COND) return r; else
-    if(code==CMD_SEND_IF_COND) return r==arg? SD_OK : SD_ERROR; else
-    if(code==CMD_ALL_SEND_CID) {r|=*EMMC_RESP3; r|=*EMMC_RESP2; r|=*EMMC_RESP1; return r; } else
-    if(code==CMD_SEND_REL_ADDR) {
-        sd_err=(((r&0x1fff))|((r&0x2000)<<6)|((r&0x4000)<<8)|((r&0x8000)<<8))&CMD_ERRORS_MASK;
-        return r&CMD_RCA_MASK;
+
+    if (sd_status(SR_CMD_INHIBIT)) { 
+        uart_send_string("ERROR: EMMC busy\n"); 
+        sd_err= SD_TIMEOUT;
+        return 0;
     }
-    return r&CMD_ERRORS_MASK;
-    // make gcc happy
-    return 0;
+
+    *EMMC_INTERRUPT = *EMMC_INTERRUPT; 
+    *EMMC_ARG1=arg; 
+    *EMMC_CMDTM=code;
+
+    if(code==CMD_SEND_OP_COND) { 
+        delay_mc(1000);
+    } 
+    else if(code==CMD_SEND_IF_COND || code==CMD_APP_CMD) {
+        delay_mc(100);
+    }
+
+    if((r = sd_int(INT_CMD_DONE))) {
+        uart_send_string("ERROR: failed to send EMMC command\n");
+        sd_err=r;
+        return 0;
+    }
+
+    r = *EMMC_RESP0;
+    switch(code) {
+        case CMD_GO_IDLE:
+        case CMD_APP_CMD: 
+            return 0;
+        case CMD_APP_CMD | CMD_RSPNS_48:
+            return r & SR_APP_CMD;
+        case CMD_SEND_OP_COND:
+            return r;
+        case CMD_SEND_IF_COND:
+            return r == arg ? SD_OK : SD_ERROR;
+        case CMD_ALL_SEND_CID:
+            r |= *EMMC_RESP3 | *EMMC_RESP2 | *EMMC_RESP1;
+            return r;
+        case CMD_SEND_REL_ADDR:
+            sd_err = (((r & 0x1fff)) | ((r & 0x2000) << 6) | ((r & 0x4000) << 8) | ((r & 0x8000) << 8)) & CMD_ERRORS_MASK;
+            return r & CMD_RCA_MASK;
+        default:
+            return r & CMD_ERRORS_MASK;
+    }
 }
 
 /**

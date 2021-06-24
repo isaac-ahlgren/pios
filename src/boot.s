@@ -64,7 +64,7 @@ maincore:
     beq     2f
     msr     sp_el1, x5
     msr     sp_el0, x5
-    // Configure Events (Don't know what is going on here)
+    // Configure Events
     mrs     x0, cnthctl_el2
     orr     x0, x0, #3
     msr     cnthctl_el2, x0
@@ -73,7 +73,7 @@ maincore:
     mov     x0, #(1 << 31)
     orr     x0, x0, #(1 << 1)
     msr     hcr_el2, x0
-    mrs     x0, hcr_el2    //Why do we have this instruction?
+    mrs     x0, hcr_el2 
 
     // Change execution level to EL1
     mov     x2, #0x3c4
@@ -84,6 +84,9 @@ maincore:
     eret    
 
 2:  mov     sp, x5
+
+    ldr     x2, =_vectors_el1
+    msr     vbar_el1, x2
  
     // clear bss
     bl       bss_clear
@@ -93,5 +96,3 @@ maincore:
  
     // jump to C code, should not return
     bl      kernel_main
-    // for failsafe, halt this core too
-//    b 1b

@@ -6,7 +6,7 @@ OBJDUMP := aarch64-none-elf-objdump
 OBJCOPY := aarch64-none-elf-objcopy
 CONFIGS := -DCONFIG_HEAP_SIZE=4096
 
-CFLAGS := -O0 -ffreestanding -fno-pie -fno-stack-protector -g3 -Wall -mgeneral-regs-only -ffp-contract=off $(CONFIGS)
+CFLAGS := -O0 -ffreestanding -fno-pie -fno-stack-protector -g3 -Wall -mgeneral-regs-only -ffp-contract=off -Iinclude/  $(CONFIGS)
 
 
 ODIR = obj
@@ -25,7 +25,8 @@ OBJS = \
 	elf.o \
         clib.o \
 	page.o \
-
+	excep.o \
+	vector_tbles.o \
 
 
 OBJ = $(patsubst %,$(ODIR)/%,$(OBJS))
