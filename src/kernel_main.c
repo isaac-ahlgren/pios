@@ -27,12 +27,12 @@ void kernel_main() {
     mmu_init();
     fat_init();
 
-    int* fault = (int*) 0x777777;
-    *fault = 0;
-    
-    exec("/bin/a.out", 0);
+  
+//    exec("/bin/a.out", 0);
 
     while(1){
+    
+        UART("Hope this works!\n");    
 
     }
 }
